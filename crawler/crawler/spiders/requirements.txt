@@ -1,3 +1,4 @@
 scrapy==2.5.0
 yagmail==0.14.247
 configparser==5.0.2
+scrapy-user-agents==0.1.1
