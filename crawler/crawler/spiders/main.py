@@ -72,8 +72,7 @@ def get_balance(last_price):
 def place_order(pair, amount, last_price):
     url = '/spot/orders'
     query_param = ''
-    #body = '{"currency_pair":"'+pair+'","type":"limit","account":"spot","side":"buy","amount":"'+str(amount)+'","price":"'+last_price+'","time_in_force":"gtc"}'
-    body = '{"currency_pair":"' + pair + '","type":"limit","account":"spot","side":"buy","amount":"2","price":"' + last_price + '","time_in_force":"gtc"}'
+    body = '{"currency_pair":"'+pair+'","type":"limit","account":"spot","side":"buy","amount":"'+str(amount)+'","price":"'+last_price+'","time_in_force":"gtc"}'
     sign_headers = gen_sign('POST', prefix + url, query_param, body)
     headers.update(sign_headers)
     r = requests.request('POST', host + prefix + url, headers=headers, data=body)
@@ -90,26 +89,24 @@ def read_json():
     # Opening JSON file
     f = open('newListings.json', )
     g = open('oldListings.json', )
+
     # returns JSON object as
     # a dictionary
     data1 = json.load(f)
     data2 = json.load(g)
     diff = [x for x in data1 if x not in data2]
     if diff:
-        # send mail
         print('New entry in listings: ');
         print(diff)
 
         # delete data2
-        # enable after tests
-        #os.rename('oldListings.json', 'save.json')
+        os.rename('oldListings.json', 'save.json')
 
         # rename data to data2
-        # enable after tests
-        #os.rename('newListings.json', 'oldListings.json')
+        os.rename('newListings.json', 'oldListings.json')
 
-        # enable after tests
-        #os.rename('save.json', 'newListings.json')
+        os.rename('save.json', 'newListings.json')
+
     # Closing file
     f.close()
     g.close()
@@ -123,15 +120,13 @@ def read_json():
 if __name__ == "__main__":
     entry = read_json()
     if entry:
-        #element = entry[0]['heading'][0]
         matches = apply_regex(entry)
         #get first match
         if matches:
             match = matches[0]
             mail_text = match + ' is now on binance'
             # sending mail here
-            #todo: remove after testing
-            #yag.send(mail_address, mail_text, mail_text)
+            yag.send(mail_address, mail_text, mail_text)
             #iterate over all matches
             #for match in matches:
             pair = match + '_USDT'
@@ -139,7 +134,12 @@ if __name__ == "__main__":
             last_price = get_ticker(pair)
             amount = get_balance(last_price)
             place_order(pair, amount, last_price)
-            # if amount != 0:
-            #     place_order(pair, amount, last_price)
-            # else:
-            #     print('No money on wallet')
+            if amount != 0:
+                place_order(pair, amount, last_price)
+            else:
+                print('No money on wallet')
+        else:
+            print('No new listing found')
+
+    else:
+        print('No new entry on binance')
