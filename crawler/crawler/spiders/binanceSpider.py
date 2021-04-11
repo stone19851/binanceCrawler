@@ -8,7 +8,6 @@ class BinanceSpider(scrapy.Spider):
 
     def parse(self, response):
         matchers = ['list', 'List']
-        #matchers = ['Binance Will List RAMP (RAMP) in the Innovation Zone']
         binance_page_links = response.css('.css-6f91y1 a')
         hit = []
         for elem in binance_page_links:
