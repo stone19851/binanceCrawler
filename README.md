@@ -15,3 +15,4 @@ Usage:
   - api_secret: gate.io api secret
 - sudo pip3 install -r requirements.txt
 - scrapy crawl binance -O newListings.json && python3 main.py
+- before first run, make sure that oldListings.json is up do date. So you don't accidentally buy something, you don't want to buy

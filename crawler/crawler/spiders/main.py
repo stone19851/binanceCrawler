@@ -1,3 +1,4 @@
+import collections
 import time
 import hashlib
 import hmac
@@ -7,6 +8,9 @@ import json
 import os
 import yagmail
 import configparser
+from datetime import datetime
+
+file1 = open("binanceCrawler.txt","a")
 
 config = configparser.ConfigParser()
 config.read_file(open(r'settings.txt'))
@@ -46,10 +50,10 @@ def get_ticker(pair):
     query_param = 'currency_pair=' + pair
     r = requests.request('GET', host + prefix + url + '?' + query_param, headers=headers)
     last_price = r.json()[0]['last']
-    print('last_price: ' + last_price)
+    file1.write("{0} -- last_price: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), last_price))
     last_price = float(last_price)
     last_price = last_price + last_price / 100 * 5
-    print('last_price + 5%: ' + str(last_price))
+    file1.write("{0} -- last_price + 5%: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), str(last_price)))
     return str(last_price)
 
 
@@ -63,9 +67,9 @@ def get_balance(last_price):
     amount = 0
     if r.text != '[]':
         usdt_amount = float(r[0]['available']['USDT'])
-        print('USDT available on wallet: ' + usdt_amount)
+        file1.write("{0} -- USDT available on wallet: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), usdt_amount))
         amount = round(usdt_amount / last_price_float, 5)
-        print('How much coins can be bougth: ' + amount)
+        file1.write("{0} -- How much coins can be bougth: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), amount))
     return amount
 
 
@@ -76,8 +80,17 @@ def place_order(pair, amount, last_price):
     sign_headers = gen_sign('POST', prefix + url, query_param, body)
     headers.update(sign_headers)
     r = requests.request('POST', host + prefix + url, headers=headers, data=body)
-    print('Status code: ' + str(r.status_code))
-    print('Content: ' + str(r.content))
+    if r.status_code == 200:
+        # send mail here
+        mail_text = 'Erfolgreich gekauft'
+        yag.send(mail_address, mail_text, mail_text)
+    else:
+        # send mail here
+        mail_text = 'Fehler beim Kauf'
+        yag.send(mail_address, mail_text, mail_text)
+
+    file1.write("{0} -- Status code: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), str(r.status_code)))
+    file1.write("{0} -- Content: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), str(r.content)))
 
 
 def apply_regex(txt):
@@ -90,14 +103,13 @@ def read_json():
     f = open('newListings.json', )
     g = open('oldListings.json', )
 
-    # returns JSON object as
-    # a dictionary
+    # returns JSON object as a dictionary
     data1 = json.load(f)
     data2 = json.load(g)
     diff = [x for x in data1 if x not in data2]
     if diff:
-        print('New entry in listings: ');
-        print(diff)
+        file1.write("{0} -- New entry in listings: ".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+        file1.write(str(diff) + "\n")
 
         # delete data2
         os.rename('oldListings.json', 'save.json')
@@ -116,6 +128,12 @@ def read_json():
 
     return diff[0]['heading'][0]
 
+def keep_last_n_and_return_first_of_last_n(filename, n):
+    with open(filename, "r") as inp:
+         lines = collections.deque(inp, maxlen=n)
+    with open(filename, "w") as out:
+         out.writelines(lines)
+    return lines[0]
 
 if __name__ == "__main__":
     entry = read_json()
@@ -127,19 +145,23 @@ if __name__ == "__main__":
             mail_text = match + ' is now on binance'
             # sending mail here
             yag.send(mail_address, mail_text, mail_text)
+
             #iterate over all matches
             #for match in matches:
             pair = match + '_USDT'
-            print('Trading pair: ' + pair)
+            file1.write("{0} -- Trading pair: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), pair))
             last_price = get_ticker(pair)
             amount = get_balance(last_price)
             place_order(pair, amount, last_price)
             if amount != 0:
                 place_order(pair, amount, last_price)
             else:
-                print('No money on wallet')
+                file1.write("{0} -- No money on wallet\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
         else:
-            print('No new listing found')
+            file1.write("{0} -- No new listing found\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
 
     else:
-        print('No new entry on binance')
+        file1.write("{0} -- No new entry on binance\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+
+    file1.close()
+    keep_last_n_and_return_first_of_last_n('binanceCrawler.txt', 10000)
