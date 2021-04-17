@@ -15,8 +15,8 @@ cd binanceCrawler/crawler/crawler/spiders
   - mail_address_password: password for mail to send
   - api_key: gate.io api key
   - api_secret: gate.io api secret
-- sudo pip3 install -r requirements.txt
 ```
+sudo pip3 install -r requirements.txt
 scrapy crawl binance -O newListings.json && python3 main.py
 ```
 before first run, make sure that oldListings.json is up do date. So you don't accidentally buy something, you don't want to buy
