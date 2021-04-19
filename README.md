@@ -7,6 +7,7 @@ Requirements:
 Usage:
 - clone project into /opt
 ```
+chmod -R 777 binanceCrawler/
 cd binanceCrawler/crawler/crawler/spiders
 ```
 - update file settings.txt:
@@ -16,7 +17,11 @@ cd binanceCrawler/crawler/crawler/spiders
   - api_key: gate.io api key
   - api_secret: gate.io api secret
 ```
+sudo apt-get update
+sudo apt install git
+sudo apt-get install python3-pip
 sudo pip3 install -r requirements.txt
+sudo apt-get install libxslt-dev
 scrapy crawl binance -O newListings.json && python3 main.py
 ```
 before first run, make sure that oldListings.json is up do date. So you don't accidentally buy something, you don't want to buy
