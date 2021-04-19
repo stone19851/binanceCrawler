@@ -29,5 +29,5 @@ before first run, make sure that oldListings.json is up do date. So you don't ac
 ```
 sudo su
 crontab -e
-*/1 03-09 * * * /opt/binanceCrawler/crawler/crawler/spiders/script.sh
+*/1 04-11 * * 1-5 /opt/binanceCrawler/crawler/crawler/spiders/script.sh
 ```
