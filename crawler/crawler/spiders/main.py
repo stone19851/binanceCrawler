@@ -94,7 +94,7 @@ def place_order(pair, amount, last_price):
 
 
 def apply_regex(txt):
-    pattern = '\(([A-Z]{3,})\)'
+    pattern = '\(([A-Z]{2,})\)'
     return re.findall(pattern, txt)
 
 
@@ -137,26 +137,27 @@ def keep_last_n_and_return_first_of_last_n(filename, n):
 
 if __name__ == "__main__":
     entry = read_json()
+
     if entry:
         matches = apply_regex(entry)
         #get first match
         if matches:
-            match = matches[0]
-            mail_text = match + ' is now on binance'
-            # sending mail here
-            yag.send(mail_address, mail_text, mail_text)
+            for match in matches:
+                mail_text = match + ' is now on binance'
+                # sending mail here
+                yag.send(mail_address, mail_text, mail_text)
 
-            #iterate over all matches
-            #for match in matches:
-            pair = match + '_USDT'
-            file1.write("{0} -- Trading pair: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), pair))
-            last_price = get_ticker(pair)
-            amount = get_balance(last_price)
-            place_order(pair, amount, last_price)
-            if amount != 0:
+                #iterate over all matches
+                #for match in matches:
+                pair = match + '_USDT'
+                file1.write("{0} -- Trading pair: {1}\n".format(datetime.now().strftime("%Y-%m-%d %H:%M"), pair))
+                last_price = get_ticker(pair)
+                amount = get_balance(last_price)
                 place_order(pair, amount, last_price)
-            else:
-                file1.write("{0} -- No money on wallet\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+                if amount != 0:
+                    place_order(pair, amount, last_price)
+                else:
+                    file1.write("{0} -- No money on wallet\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
         else:
             file1.write("{0} -- No new listing found\n".format(datetime.now().strftime("%Y-%m-%d %H:%M")))
 
